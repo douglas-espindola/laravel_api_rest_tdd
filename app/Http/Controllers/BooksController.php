@@ -13,7 +13,7 @@ class BooksController extends Controller
     /**
      * @param Book $book
      */
-    public function __construct(private Book $book){}
+    public function __construct(private readonly Book $book){}
 
     /**
      * @return JsonResponse
@@ -44,12 +44,21 @@ class BooksController extends Controller
     /**
      * @param $id
      * @param Request $request
-     * @return JsonResponse
+     * @return JsonResponse|null
      */
-    public function update($id, Request $request): JsonResponse
+    public function update($id, Request $request): JsonResponse|null
     {
         $book = Book::findOrfail($id);
         $book->update($request->all());
         return response()->json($book, Response::HTTP_OK);
+    }
+
+    /**
+     * @param $id
+     * @return JsonResponse|null
+     */
+    public function destroy($id): JsonResponse|null
+    {
+        return response()->json($this->book->destroy($id), Response::HTTP_NO_CONTENT);
     }
 }
