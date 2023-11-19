@@ -42,10 +42,11 @@ class BooksControllerTest extends TestCase
         });
     }
 
-    public function test_get_single_book_endpont(){
+    public function test_get_single_book_endpont()
+    {
         $book = Book::factory(1)->createOne();
 
-        $response = $this->getJson('/api/book/'. $book->id);
+        $response = $this->getJson('/api/books/'. $book->id);
         $response->assertStatus(200);
 
         $response->assertJson(function (AssertableJson $json) use($book){
@@ -69,7 +70,7 @@ class BooksControllerTest extends TestCase
 
         $book = Book::factory(1)->makeOne()->toArray();
 
-        $response = $this->postJson('/api/book', $book);
+        $response = $this->postJson('/api/books', $book);
 
         $response->assertStatus(201);
 
@@ -83,6 +84,21 @@ class BooksControllerTest extends TestCase
         });
     }
 
+
+    public function test_post_book_shoud_validate_when_try_create_a_invalid_book()
+    {
+        $response = $this->postJson('/api/books', []);
+
+        $response->assertStatus(422);
+
+        $response->assertJson(function (AssertableJson $json){
+            $json->hasAll(['message', 'errors']);
+
+            $json->where('errors.title.0', 'Este campo é obrigatório!')
+                ->where('errors.isbn.0', 'Este campo é obrigatório!');
+        });
+    }
+
     public function test_patch_book_endpoint()
     {
         Book::factory(1)->createOne();
@@ -91,7 +107,7 @@ class BooksControllerTest extends TestCase
             'title' => 'The new book patch'
         ];
 
-        $response = $this->putJson('/api/book/1', $book);
+        $response = $this->putJson('/api/books/1', $book);
 
         $response->assertStatus(200);
 
@@ -106,7 +122,7 @@ class BooksControllerTest extends TestCase
     {
         Book::factory(1)->createOne();
 
-        $response = $this->deleteJson('/api/book/1');
+        $response = $this->deleteJson('/api/books/1');
 
         $response->assertStatus(204);
     }
