@@ -15,7 +15,7 @@ class BooksControllerTest extends TestCase
     /**
      * A basic feature test example.
      */
-    public function test_books_get_endpoint(): void
+    public function test_get_books_endpoint(): void
     {
         $books = Book::factory(3)->create();
 
@@ -24,7 +24,7 @@ class BooksControllerTest extends TestCase
         $response->assertStatus(200);
         $response->assertJsonCount(3);
 
-        $response->assertJson(function ( AssertableJson $json) use($books){
+        $response->assertJson(function (AssertableJson $json) use($books){
             $json->whereAllType([
                 '0.id' => 'integer',
                 '0.title' => 'string',
@@ -40,6 +40,47 @@ class BooksControllerTest extends TestCase
                 '0.title' => $book->title,
                 '0.isbn' => $book->isbn,
             ]);
+        });
+    }
+
+    public function test_get_single_book_endpont(){
+        $book = Book::factory(1)->createOne();
+
+        $response = $this->getJson('/api/book/'. $book->id);
+        $response->assertStatus(200);
+
+        $response->assertJson(function (AssertableJson $json) use($book){
+            $json->hasAll(['id', 'title', 'isbn', 'created_at', 'updated_at']);
+
+            $json->whereAllType([
+                'id' => 'integer',
+                'title' => 'string',
+                'isbn' => 'string'
+            ]);
+
+            $json->whereAll([
+                'id' => $book->id,
+                'title' => $book->title,
+                'isbn' => $book->isbn,
+            ]);
+        });
+    }
+
+    public function test_post_book_endpoint(){
+
+        $book = Book::factory(1)->makeOne()->toArray();
+
+        $response = $this->postJson('/api/book', $book);
+
+        $response->assertStatus(201);
+
+        $response->assertJson(function (AssertableJson $json) use ($book){
+            $json->hasAll(['id', 'title', 'isbn', 'created_at', 'updated_at']);
+
+            $json->whereAll([
+                'title' => $book['title'],
+                'isbn' => $book['isbn'],
+            ])->etc();
         });
     }
 }
